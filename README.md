@@ -5,7 +5,7 @@ A brain-dominance based career guidance platform for 10th (SSC), 12th (HSC), and
 ## Project structure
 
 ```
-brain-career-guide/
+career_path/
   backend/    Express + MongoDB API + NodeJs
   frontend/   React + Vite client
 ```
@@ -50,7 +50,7 @@ After running `npm run seed`, the following accounts are available (password `Te
 ```
 cd frontend
 npm install
-cp .env.example .env   # set VITE_API_URL if not using the default
+cp .env   # set VITE_API_URL if not using the default
 npm run dev
 ```
 
