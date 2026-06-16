@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
+import { CheckCircle2, Check } from "lucide-react";
 
 const PaymentSuccess = () => {
   const { refreshUser } = useAuth();
@@ -10,7 +11,7 @@ const PaymentSuccess = () => {
 
   useEffect(() => {
     refreshUser();
-    toast.success("Premium unlocked! Welcome to the full experience. 🎉");
+    toast.success("Premium unlocked. Welcome to the full experience.");
     const t = setTimeout(() => navigate("/results"), 4000);
     return () => clearTimeout(t);
   }, []);
@@ -41,9 +42,13 @@ const PaymentSuccess = () => {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.3, type: "spring" }}
-          style={{ fontSize: "4rem", marginBottom: "1.25rem" }}
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginBottom: "1.25rem",
+          }}
         >
-          🎉
+          <CheckCircle2 size={56} color="#10b981" />
         </motion.div>
 
         <h1
@@ -55,7 +60,7 @@ const PaymentSuccess = () => {
             marginBottom: "0.75rem",
           }}
         >
-          Premium Unlocked!
+          Premium Unlocked
         </h1>
         <p
           style={{
@@ -65,9 +70,8 @@ const PaymentSuccess = () => {
             marginBottom: "2rem",
           }}
         >
-          You now have lifetime access to all career matches, subject roadmaps,
-          skill gap analysis, and learning resources. Welcome to the full
-          NeuroCareers experience!
+          You now have full access to all career matches, roadmaps, and learning
+          resources.
         </p>
 
         <div
@@ -76,11 +80,12 @@ const PaymentSuccess = () => {
             flexDirection: "column",
             gap: "0.6rem",
             marginBottom: "2rem",
+            textAlign: "left",
           }}
         >
           {[
-            "10+ Personalized Career Matches",
-            "Complete Subject Roadmap",
+            "All Career Matches",
+            "Complete Roadmaps",
             "Skill Gap Analysis",
             "Curated Learning Resources",
             "Cognitive Profile Deep Dive",
@@ -95,8 +100,7 @@ const PaymentSuccess = () => {
                 color: "var(--text-secondary)",
               }}
             >
-              <span style={{ color: "#10b981", fontWeight: 700 }}>✓</span>{" "}
-              {item}
+              <Check size={16} color="#10b981" /> {item}
             </div>
           ))}
         </div>
@@ -111,7 +115,7 @@ const PaymentSuccess = () => {
             fontSize: "0.95rem",
           }}
         >
-          See My Full Results →
+          See My Full Results
         </Link>
         <p
           style={{
@@ -120,7 +124,7 @@ const PaymentSuccess = () => {
             marginTop: "1rem",
           }}
         >
-          Redirecting automatically in 4 seconds...
+          Redirecting automatically in 4 seconds.
         </p>
       </motion.div>
     </div>

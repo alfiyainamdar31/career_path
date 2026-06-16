@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { Activity } from "lucide-react";
 
 const BrainMeter = ({ answers, currentIndex }) => {
   const [leftScore, setLeftScore] = useState(0);
@@ -27,7 +28,7 @@ const BrainMeter = ({ answers, currentIndex }) => {
   const rightPercent = total === 0 ? 50 : 100 - leftPercent;
 
   const getDominanceLabel = () => {
-    if (total === 0) return "Awaiting answers...";
+    if (total === 0) return "Awaiting answers";
     if (leftPercent > 65) return "Strong Left Brain";
     if (rightPercent > 65) return "Strong Right Brain";
     if (leftPercent > 55) return "Moderate Left Brain";
@@ -51,15 +52,24 @@ const BrainMeter = ({ answers, currentIndex }) => {
         <div>
           <div
             style={{
-              fontSize: "0.72rem",
-              fontWeight: 700,
-              letterSpacing: "0.08em",
-              color: "var(--text-muted)",
-              textTransform: "uppercase",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.4rem",
               marginBottom: "0.2rem",
             }}
           >
-            Live Brain Meter
+            <Activity size={13} color="var(--text-muted)" />
+            <span
+              style={{
+                fontSize: "0.72rem",
+                fontWeight: 700,
+                letterSpacing: "0.08em",
+                color: "var(--text-muted)",
+                textTransform: "uppercase",
+              }}
+            >
+              Live Brain Meter
+            </span>
           </div>
           <div
             style={{
@@ -156,7 +166,7 @@ const BrainMeter = ({ answers, currentIndex }) => {
             fontWeight: 600,
           }}
         >
-          🧠 Logical · Analytical
+          Logical · Analytical
         </span>
         <span
           style={{
@@ -165,7 +175,7 @@ const BrainMeter = ({ answers, currentIndex }) => {
             fontWeight: 600,
           }}
         >
-          Creative · Intuitive 🎨
+          Creative · Intuitive
         </span>
       </div>
     </div>

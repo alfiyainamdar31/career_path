@@ -1,21 +1,28 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { motion, AnimatePresence } from "framer-motion";
+import {
+  Brain,
+  Compass,
+  LayoutDashboard,
+  ClipboardList,
+  BarChart3,
+  Sparkles,
+} from "lucide-react";
 
 const Navbar = () => {
   const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate("/");
-    setMobileOpen(false);
   };
 
-  const isActive = (path) => location.pathname === path;
+  const isActive = (path) =>
+    location.pathname === path ||
+    (path !== "/" && location.pathname.startsWith(path));
 
   return (
     <nav className="navbar">
@@ -49,10 +56,9 @@ const Navbar = () => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: "1.1rem",
               }}
             >
-              🧠
+              <Brain size={19} color="white" />
             </div>
             <div>
               <div
@@ -84,16 +90,32 @@ const Navbar = () => {
           <div
             style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}
           >
+            <NavLink to="/careers" active={isActive("/careers")} icon={Compass}>
+              Careers
+            </NavLink>
+
             {isAuthenticated ? (
               <>
-                <NavLink to="/dashboard" active={isActive("/dashboard")}>
+                <NavLink
+                  to="/dashboard"
+                  active={isActive("/dashboard")}
+                  icon={LayoutDashboard}
+                >
                   Dashboard
                 </NavLink>
-                <NavLink to="/quiz" active={isActive("/quiz")}>
+                <NavLink
+                  to="/quiz"
+                  active={isActive("/quiz")}
+                  icon={ClipboardList}
+                >
                   Take Quiz
                 </NavLink>
                 {user?.brainDominance && (
-                  <NavLink to="/results" active={isActive("/results")}>
+                  <NavLink
+                    to="/results"
+                    active={isActive("/results")}
+                    icon={BarChart3}
+                  >
                     My Results
                   </NavLink>
                 )}
@@ -115,16 +137,19 @@ const Navbar = () => {
                   {user?.isPremium && (
                     <span
                       style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.3rem",
                         background: "linear-gradient(135deg,#f59e0b,#ef4444)",
                         color: "#fff",
                         fontSize: "0.7rem",
                         fontWeight: 700,
-                        padding: "0.2rem 0.6rem",
+                        padding: "0.25rem 0.65rem",
                         borderRadius: "999px",
                         letterSpacing: "0.05em",
                       }}
                     >
-                      💎 PREMIUM
+                      <Sparkles size={12} /> PREMIUM
                     </span>
                   )}
                   <div
@@ -181,9 +206,6 @@ const Navbar = () => {
               </>
             ) : (
               <>
-                <NavLink to="/" active={isActive("/")}>
-                  Home
-                </NavLink>
                 <Link
                   to="/login"
                   style={{
@@ -193,7 +215,6 @@ const Navbar = () => {
                     borderRadius: "999px",
                     fontSize: "0.88rem",
                     fontWeight: 500,
-                    transition: "all 0.15s",
                   }}
                 >
                   Login
@@ -208,7 +229,7 @@ const Navbar = () => {
                     display: "inline-block",
                   }}
                 >
-                  Get Started Free →
+                  Get Started Free
                 </Link>
               </>
             )}
@@ -219,7 +240,7 @@ const Navbar = () => {
   );
 };
 
-const NavLink = ({ to, children, active }) => (
+const NavLink = ({ to, children, active, icon: Icon }) => (
   <Link
     to={to}
     style={{
@@ -232,8 +253,12 @@ const NavLink = ({ to, children, active }) => (
       background: active ? "var(--bg-surface-2)" : "transparent",
       transition: "all 0.15s",
       whiteSpace: "nowrap",
+      display: "flex",
+      alignItems: "center",
+      gap: "0.4rem",
     }}
   >
+    <Icon size={15} />
     {children}
   </Link>
 );

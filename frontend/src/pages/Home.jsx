@@ -2,6 +2,17 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
+import {
+  Sparkles,
+  ClipboardList,
+  Brain,
+  Target,
+  ShieldCheck,
+  BarChart3,
+  GraduationCap,
+  BookOpen,
+  Compass,
+} from "lucide-react";
 
 const Home = () => {
   const { isAuthenticated } = useAuth();
@@ -16,7 +27,6 @@ const Home = () => {
           position: "relative",
         }}
       >
-        {/* Decorative background */}
         <div
           style={{
             position: "absolute",
@@ -32,7 +42,16 @@ const Home = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <div className="section-tag">🧠 AI-Powered Career Guidance</div>
+          <div
+            className="section-tag"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.4rem",
+            }}
+          >
+            <Sparkles size={13} /> Career Guidance for Every Student
+          </div>
 
           <h1
             style={{
@@ -53,14 +72,14 @@ const Home = () => {
             style={{
               fontSize: "1.15rem",
               color: "var(--text-secondary)",
-              maxWidth: "580px",
+              maxWidth: "600px",
               margin: "0 auto 2.5rem",
               lineHeight: 1.7,
             }}
           >
-            Take our scientifically-designed brain dominance quiz and receive a
-            personalized, ranked list of career paths matched to how your mind
-            works.
+            From 10th grade stream selection to 12th grade career planning, take
+            our brain dominance quiz and get a personalized roadmap of careers,
+            subjects, and exams matched to how you think.
           </p>
 
           <div
@@ -81,7 +100,7 @@ const Home = () => {
                   fontSize: "1rem",
                 }}
               >
-                Start Brain Assessment →
+                Start Brain Assessment
               </Link>
             ) : (
               <>
@@ -97,7 +116,7 @@ const Home = () => {
                   Start Free — No Card Needed
                 </Link>
                 <Link
-                  to="/login"
+                  to="/careers"
                   className="btn-secondary"
                   style={{
                     textDecoration: "none",
@@ -105,13 +124,12 @@ const Home = () => {
                     fontSize: "1rem",
                   }}
                 >
-                  Log In
+                  Browse Careers
                 </Link>
               </>
             )}
           </div>
 
-          {/* Stats strip */}
           <div
             style={{
               display: "flex",
@@ -128,7 +146,7 @@ const Home = () => {
                 label: "To complete",
                 color: "var(--right-brain)",
               },
-              { num: "10+", label: "Career paths", color: "var(--balanced)" },
+              { num: "14+", label: "Career paths", color: "var(--balanced)" },
               { num: "Free", label: "To start", color: "var(--emerald-500)" },
             ].map((s, i) => (
               <motion.div
@@ -190,26 +208,26 @@ const Home = () => {
           {[
             {
               step: "01",
-              icon: "📝",
+              icon: ClipboardList,
               title: "Take the Quiz",
               desc:
-                "Answer 15 instinct-driven questions about how you think, learn, and work. No right or wrong answers.",
+                "Answer questions tailored to your academic level, whether you're choosing a 10th stream or planning after 12th.",
               color: "var(--left-brain)",
             },
             {
               step: "02",
-              icon: "🧠",
+              icon: Brain,
               title: "Discover Your Profile",
               desc:
-                "Get your brain dominance type — left, right, or balanced — with a detailed cognitive breakdown.",
+                "Get your brain dominance type and see how it aligns with your current or future stream.",
               color: "var(--right-brain)",
             },
             {
               step: "03",
-              icon: "🎯",
-              title: "Get Your Career List",
+              icon: Target,
+              title: "Get Your Roadmap",
               desc:
-                "Receive a ranked, personalized list of careers, required subjects, skill gaps, and learning resources.",
+                "Receive ranked careers with subjects to study, exams to prepare for, and realistic future scope.",
               color: "var(--balanced)",
             },
           ].map((item, i) => (
@@ -237,8 +255,19 @@ const Home = () => {
               >
                 STEP {item.step}
               </div>
-              <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>
-                {item.icon}
+              <div
+                style={{
+                  width: "48px",
+                  height: "48px",
+                  background: `${item.color}15`,
+                  borderRadius: "12px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: "1rem",
+                }}
+              >
+                <item.icon size={24} color={item.color} />
               </div>
               <h3
                 style={{
@@ -285,31 +314,41 @@ const Home = () => {
         >
           {[
             {
-              icon: "🔐",
-              title: "Two-Factor Auth",
-              desc:
-                "Your career data is secured with optional TOTP authentication",
+              icon: ShieldCheck,
+              title: "Verified Accounts",
+              desc: "Email verification keeps your career data secure",
             },
             {
-              icon: "📊",
+              icon: BarChart3,
               title: "Real Analytics",
               desc:
                 "Visual charts of your brain balance with detailed explanations",
             },
             {
-              icon: "🎓",
+              icon: GraduationCap,
               title: "Subject Guidance",
               desc: "Know exactly which subjects to study for each career path",
             },
             {
-              icon: "📚",
-              title: "Learning Resources",
-              desc: "Curated courses, books & videos for your target career",
+              icon: Compass,
+              title: "Career Explorer",
+              desc: "Search and filter every profession with full roadmaps",
             },
           ].map((f, i) => (
             <div key={i} className="glass" style={{ padding: "1.5rem" }}>
-              <div style={{ fontSize: "1.8rem", marginBottom: "0.75rem" }}>
-                {f.icon}
+              <div
+                style={{
+                  width: "40px",
+                  height: "40px",
+                  background: "var(--bg-surface-2)",
+                  borderRadius: "10px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: "0.75rem",
+                }}
+              >
+                <f.icon size={20} color="var(--accent-primary)" />
               </div>
               <div
                 style={{
@@ -368,8 +407,8 @@ const Home = () => {
               fontSize: "1rem",
             }}
           >
-            Join thousands of students and professionals who discovered their
-            ideal career path.
+            Join students who discovered their ideal career path with a clear,
+            actionable roadmap.
           </p>
           <Link
             to="/register"

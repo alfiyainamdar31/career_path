@@ -5,9 +5,6 @@ const { protect } = require("../middleware/auth");
 
 const router = express.Router();
 
-// @route   POST /api/payment/create-checkout-session
-// @desc    Create Stripe checkout session
-// @access  Private
 router.post("/create-checkout-session", protect, async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
@@ -39,7 +36,7 @@ router.post("/create-checkout-session", protect, async (req, res) => {
               name: "Brain Career Guide - Premium Access",
               description:
                 "Unlock all career matches, skill gap analysis, and personalized roadmap",
-              images: ["https://your-domain.com/preview-image.png"], // Replace with your image URL
+              images: ["https://your-domain.com/preview-image.png"], // image url
             },
             unit_amount: 999, // $9.99 in cents
           },

@@ -1,17 +1,25 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { motion } from "framer-motion";
+import {
+  ClipboardList,
+  Brain,
+  Sparkles,
+  Compass,
+  TrendingUp,
+  Network,
+  FolderKanban,
+  Award,
+} from "lucide-react";
 
 const Dashboard = () => {
   const { user, refreshUser } = useAuth();
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
-    // Check for successful payment return
     const params = new URLSearchParams(window.location.search);
     if (params.get("session_id")) {
       refreshUser();
@@ -97,7 +105,7 @@ const Dashboard = () => {
               margin: 0,
             }}
           >
-            {user?.name} 👋
+            {user?.name}
           </h1>
           <p
             style={{
@@ -114,18 +122,18 @@ const Dashboard = () => {
         {user?.isPremium && (
           <div
             style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.4rem",
               background: "linear-gradient(135deg,#f59e0b,#ef4444)",
               color: "white",
               padding: "0.65rem 1.25rem",
               borderRadius: "var(--radius-md)",
               fontSize: "0.85rem",
               fontWeight: 700,
-              display: "flex",
-              alignItems: "center",
-              gap: "0.4rem",
             }}
           >
-            💎 Premium Member
+            <Sparkles size={15} /> Premium Member
           </div>
         )}
       </motion.div>
@@ -140,25 +148,8 @@ const Dashboard = () => {
         }}
       >
         {/* Quiz card */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="glass card-hover"
-          style={{ padding: "1.5rem" }}
-        >
-          <div style={{ fontSize: "2rem", marginBottom: "0.75rem" }}>📝</div>
-          <div
-            style={{
-              fontWeight: 700,
-              fontSize: "1rem",
-              color: "var(--text-primary)",
-              marginBottom: "0.4rem",
-            }}
-          >
-            Brain Quiz
-          </div>
-          <div
+        <DashCard icon={ClipboardList} delay={0.1} title="Brain Quiz">
+          <p
             style={{
               color: "var(--text-muted)",
               fontSize: "0.82rem",
@@ -167,9 +158,9 @@ const Dashboard = () => {
             }}
           >
             {quizTaken
-              ? "Quiz completed! View your results or retake."
-              : "15 questions · ~3 minutes · Free"}
-          </div>
+              ? "Quiz completed. View your results or retake."
+              : "15 questions, about 3 minutes, free."}
+          </p>
           <Link
             to={quizTaken ? "/results" : "/quiz"}
             className="btn-primary"
@@ -180,30 +171,13 @@ const Dashboard = () => {
               fontSize: "0.85rem",
             }}
           >
-            {quizTaken ? "View Results →" : "Start Quiz →"}
+            {quizTaken ? "View Results" : "Start Quiz"}
           </Link>
-        </motion.div>
+        </DashCard>
 
         {/* Brain Profile */}
         {quizTaken && (
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="glass card-hover"
-            style={{ padding: "1.5rem" }}
-          >
-            <div style={{ fontSize: "2rem", marginBottom: "0.75rem" }}>🧠</div>
-            <div
-              style={{
-                fontWeight: 700,
-                fontSize: "1rem",
-                color: "var(--text-primary)",
-                marginBottom: "0.4rem",
-              }}
-            >
-              Your Brain Type
-            </div>
+          <DashCard icon={Brain} delay={0.15} title="Your Brain Type">
             <div
               style={{
                 fontFamily: "var(--font-display)",
@@ -258,31 +232,16 @@ const Dashboard = () => {
                 </div>
               ))}
             </div>
-          </motion.div>
+          </DashCard>
         )}
 
         {/* Premium */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="glass card-hover"
-          style={{ padding: "1.5rem" }}
+        <DashCard
+          icon={user?.isPremium ? Award : Sparkles}
+          delay={0.2}
+          title={user?.isPremium ? "Premium Access" : "Go Premium"}
         >
-          <div style={{ fontSize: "2rem", marginBottom: "0.75rem" }}>
-            {user?.isPremium ? "💎" : "🔓"}
-          </div>
-          <div
-            style={{
-              fontWeight: 700,
-              fontSize: "1rem",
-              color: "var(--text-primary)",
-              marginBottom: "0.4rem",
-            }}
-          >
-            {user?.isPremium ? "Premium Access" : "Go Premium"}
-          </div>
-          <div
+          <p
             style={{
               color: "var(--text-muted)",
               fontSize: "0.82rem",
@@ -291,9 +250,9 @@ const Dashboard = () => {
             }}
           >
             {user?.isPremium
-              ? "Full access to all career matches, subject roadmap & resources."
-              : "Unlock 10+ careers, skill gaps & a personalized study plan."}
-          </div>
+              ? "Full access to all career matches, roadmaps and resources."
+              : "Unlock every career match and full roadmaps."}
+          </p>
           {!user?.isPremium && quizTaken && (
             <Link
               to="/results"
@@ -306,31 +265,22 @@ const Dashboard = () => {
                 borderRadius: "var(--radius-md)",
               }}
             >
-              Upgrade — $9.99 →
+              Upgrade Now
             </Link>
           )}
-        </motion.div>
+          {user?.isPremium && (
+            <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
+              Plan:{" "}
+              {user.subscriptionPlan === "PREMIUM_LIFETIME"
+                ? "Lifetime"
+                : "Monthly"}
+            </span>
+          )}
+        </DashCard>
 
-        {/* 2FA Security */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-          className="glass card-hover"
-          style={{ padding: "1.5rem" }}
-        >
-          <div style={{ fontSize: "2rem", marginBottom: "0.75rem" }}>🔐</div>
-          <div
-            style={{
-              fontWeight: 700,
-              fontSize: "1rem",
-              color: "var(--text-primary)",
-              marginBottom: "0.4rem",
-            }}
-          >
-            Security
-          </div>
-          <div
+        {/* Explore */}
+        <DashCard icon={Compass} delay={0.25} title="Career Explorer">
+          <p
             style={{
               color: "var(--text-muted)",
               fontSize: "0.82rem",
@@ -338,42 +288,21 @@ const Dashboard = () => {
               lineHeight: 1.5,
             }}
           >
-            {user?.twoFactorEnabled
-              ? "Two-factor authentication is active."
-              : "Enable 2FA to secure your account."}
-          </div>
-          {user?.twoFactorEnabled ? (
-            <span
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.4rem",
-                color: "#065f46",
-                background: "#ecfdf5",
-                padding: "0.4rem 0.85rem",
-                borderRadius: "999px",
-                fontSize: "0.8rem",
-                fontWeight: 600,
-                border: "1px solid #6ee7b7",
-              }}
-            >
-              ✓ 2FA Enabled
-            </span>
-          ) : (
-            <Link
-              to="/2fa/setup"
-              className="btn-secondary"
-              style={{
-                textDecoration: "none",
-                display: "inline-block",
-                padding: "0.5rem 1.25rem",
-                fontSize: "0.85rem",
-              }}
-            >
-              Enable 2FA →
-            </Link>
-          )}
-        </motion.div>
+            Search and filter every profession with full roadmaps.
+          </p>
+          <Link
+            to="/careers"
+            className="btn-secondary"
+            style={{
+              textDecoration: "none",
+              display: "inline-block",
+              padding: "0.5rem 1.25rem",
+              fontSize: "0.85rem",
+            }}
+          >
+            Browse Careers
+          </Link>
+        </DashCard>
       </div>
 
       {/* Career Tips */}
@@ -391,9 +320,13 @@ const Dashboard = () => {
             fontWeight: 700,
             color: "var(--text-primary)",
             marginBottom: "1.25rem",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
           }}
         >
-          💡 Career Development Tips
+          <TrendingUp size={18} color="var(--accent-primary)" /> Career
+          Development Tips
         </h2>
         <div
           style={{
@@ -407,25 +340,25 @@ const Dashboard = () => {
               accent: "var(--left-brain)",
               title: "Update Your Skills",
               desc:
-                "The job market evolves fast. Spend 30 minutes daily learning something new.",
+                "The job market evolves fast. Spend time regularly learning something new.",
             },
             {
               accent: "var(--right-brain)",
               title: "Network Actively",
               desc:
-                "70% of jobs are found through networking. Engage on LinkedIn regularly.",
+                "Most opportunities are found through networking. Engage with professionals in your field.",
             },
             {
               accent: "var(--balanced)",
               title: "Build a Portfolio",
               desc:
-                "Show projects, not just your resume. A personal website makes you stand out.",
+                "Show projects, not just credentials. A personal portfolio makes you stand out.",
             },
             {
               accent: "var(--emerald-500)",
               title: "Get Certified",
               desc:
-                "Industry certifications can increase your salary by 20–30% on average.",
+                "Relevant certifications and exam preparation can meaningfully boost your prospects.",
             },
           ].map((tip, i) => (
             <div
@@ -461,5 +394,41 @@ const Dashboard = () => {
     </div>
   );
 };
+
+const DashCard = ({ icon: Icon, title, delay, children }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 16 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay }}
+    className="glass card-hover"
+    style={{ padding: "1.5rem" }}
+  >
+    <div
+      style={{
+        width: "40px",
+        height: "40px",
+        background: "var(--bg-surface-2)",
+        borderRadius: "10px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        marginBottom: "0.75rem",
+      }}
+    >
+      <Icon size={20} color="var(--accent-primary)" />
+    </div>
+    <div
+      style={{
+        fontWeight: 700,
+        fontSize: "1rem",
+        color: "var(--text-primary)",
+        marginBottom: "0.4rem",
+      }}
+    >
+      {title}
+    </div>
+    {children}
+  </motion.div>
+);
 
 export default Dashboard;

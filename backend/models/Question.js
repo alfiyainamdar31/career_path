@@ -10,15 +10,29 @@ const questionSchema = new mongoose.Schema({
       text: String,
       type: {
         type: String,
-        enum: ["L", "R", "B"], // Left, Right, Balanced
+        enum: ["L", "R", "B"], // Left brain, Right brain, Balanced
         required: true,
       },
     },
   ],
   category: {
     type: String,
-    enum: ["problem_solving", "communication", "work_style", "personal"],
+    enum: [
+      "problem_solving",
+      "communication",
+      "work_style",
+      "personal",
+      "interest",
+      "aptitude",
+    ],
     required: true,
+  },
+  // Which student groups this question applies to.
+  // Shared questions apply to every academic level.
+  applicableLevels: {
+    type: [String],
+    enum: ["SSC_10TH", "HSC_12TH", "GRADUATE", "OTHER"],
+    default: ["SSC_10TH", "HSC_12TH", "GRADUATE", "OTHER"],
   },
   order: {
     type: Number,

@@ -4,11 +4,9 @@ import toast from "react-hot-toast";
 
 const AuthContext = createContext(null);
 
-// Set up axios defaults
 axios.defaults.baseURL =
   import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
-// Axios interceptor to attach token
 axios.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
@@ -17,7 +15,6 @@ axios.interceptors.request.use((config) => {
   return config;
 });
 
-// Axios interceptor for 401 responses
 axios.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -32,7 +29,7 @@ axios.interceptors.response.use(
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [pendingTwoFAUser, setPendingTwoFAUser] = useState(null);
+  const [pendingVerification, setPendingVerification] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -48,110 +45,94 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = async (email, password) => {
+  const completeAuth = (token, userPayload, successMessage) => {
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(userPayload));
+    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    setUser(userPayload);
+    setPendingVerification(null);
+    if (successMessage) toast.success(successMessage);
+  };
+
+  // Register a new account. The backend creates an unverified user and
+  // emails a one-time verification code.
+  const register = async (formData) => {
     try {
-      const res = await axios.post("/auth/login", { email, password });
-      if (res.data.success) {
-        // Check if 2FA is required
-        if (res.data.requires2FA) {
-          setPendingTwoFAUser({ email, userId: res.data.userId });
-          return { success: true, requires2FA: true };
-        }
-        const { token, user } = res.data;
-        localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(user));
-        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-        setUser(user);
-        toast.success(`Welcome back, ${user.name}! 🎉`);
-        return { success: true, requires2FA: false };
+      const res = await axios.post("/auth/register", formData);
+      if (res.data.success && res.data.requiresVerification) {
+        setPendingVerification({
+          userId: res.data.userId,
+          email: formData.email,
+          name: formData.name,
+        });
+        toast.success("Verification code sent to your email");
+        return { success: true, requiresVerification: true };
       }
+      return { success: false };
     } catch (error) {
-      const msg = error.response?.data?.message || "Login failed";
-      toast.error(msg);
+      toast.error(error.response?.data?.message || "Registration failed");
       return { success: false };
     }
   };
 
-  const verify2FA = async (code) => {
+  // Verify the OTP sent at registration to activate the account and log in
+  const verifyRegistrationOTP = async (otp) => {
     try {
-      const res = await axios.post("/auth/verify-2fa", {
-        userId: pendingTwoFAUser.userId,
-        token: code,
+      const res = await axios.post("/auth/verify-registration-otp", {
+        userId: pendingVerification.userId,
+        otp,
       });
       if (res.data.success) {
-        const { token, user } = res.data;
-        localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(user));
-        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-        setUser(user);
-        setPendingTwoFAUser(null);
-        toast.success(`Welcome back, ${user.name}! 🎉`);
+        completeAuth(
+          res.data.token,
+          res.data.user,
+          `Welcome, ${res.data.user.name}`,
+        );
         return true;
       }
+      return false;
     } catch (error) {
       toast.error(error.response?.data?.message || "Invalid verification code");
       return false;
     }
   };
 
-  const register = async (name, email, password) => {
+  const resendOTP = async () => {
     try {
-      const res = await axios.post("/auth/register", { name, email, password });
-      if (res.data.success) {
-        const { token, user } = res.data;
-        localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(user));
-        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-        setUser(user);
-        toast.success(`Account created! Welcome, ${user.name}! 🧠`);
-        return true;
-      }
+      await axios.post("/auth/resend-otp", {
+        userId: pendingVerification.userId,
+      });
+      toast.success("A new code has been sent");
+      return true;
     } catch (error) {
-      const msg = error.response?.data?.message || "Registration failed";
-      toast.error(msg);
+      toast.error("Failed to resend code");
       return false;
     }
   };
 
-  const setup2FA = async () => {
+  const login = async (email, password) => {
     try {
-      const res = await axios.post("/auth/setup-2fa");
-      return res.data;
-    } catch (error) {
-      toast.error("Failed to setup 2FA");
-      return null;
-    }
-  };
+      const res = await axios.post("/auth/login", { email, password });
 
-  const enable2FA = async (token) => {
-    try {
-      const res = await axios.post("/auth/enable-2fa", { token });
-      if (res.data.success) {
-        const updatedUser = { ...user, twoFactorEnabled: true };
-        setUser(updatedUser);
-        localStorage.setItem("user", JSON.stringify(updatedUser));
-        toast.success("Two-factor authentication enabled! 🔐");
-        return true;
+      if (res.data.success && res.data.requiresVerification) {
+        setPendingVerification({ userId: res.data.userId, email });
+        toast("Please verify your email to continue");
+        return { success: true, requiresVerification: true };
       }
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Invalid code");
-      return false;
-    }
-  };
 
-  const disable2FA = async (token) => {
-    try {
-      const res = await axios.post("/auth/disable-2fa", { token });
       if (res.data.success) {
-        const updatedUser = { ...user, twoFactorEnabled: false };
-        setUser(updatedUser);
-        localStorage.setItem("user", JSON.stringify(updatedUser));
-        toast.success("Two-factor authentication disabled");
-        return true;
+        completeAuth(
+          res.data.token,
+          res.data.user,
+          `Welcome back, ${res.data.user.name}`,
+        );
+        return { success: true, requiresVerification: false };
       }
+
+      return { success: false };
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to disable 2FA");
-      return false;
+      toast.error(error.response?.data?.message || "Login failed");
+      return { success: false };
     }
   };
 
@@ -172,7 +153,24 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem("user", JSON.stringify(updatedUser));
       }
     } catch (error) {
-      console.error("Failed to refresh user:", error);
+      // Silently ignore; the next protected request will surface auth issues
+    }
+  };
+
+  const updateProfile = async (academicLevel, currentStream) => {
+    try {
+      const res = await axios.put("/auth/profile", {
+        academicLevel,
+        currentStream,
+      });
+      if (res.data.success) {
+        setUser(res.data.user);
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+        return true;
+      }
+    } catch (error) {
+      toast.error("Failed to update profile");
+      return false;
     }
   };
 
@@ -181,16 +179,15 @@ export const AuthProvider = ({ children }) => {
       value={{
         user,
         loading,
-        pendingTwoFAUser,
+        pendingVerification,
         isAuthenticated: !!user,
         login,
         logout,
         register,
-        verify2FA,
-        setup2FA,
-        enable2FA,
-        disable2FA,
+        verifyRegistrationOTP,
+        resendOTP,
         refreshUser,
+        updateProfile,
       }}
     >
       {children}

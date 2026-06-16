@@ -8,17 +8,18 @@ require("dotenv").config();
 const authRoutes = require("./routes/auth");
 const quizRoutes = require("./routes/quiz");
 const paymentRoutes = require("./routes/payment");
+const careerRoutes = require("./routes/careers");
 
 const app = express();
 
-// 1. Security middleware first
+// Security headers
 app.use(
   helmet({
     contentSecurityPolicy: false,
   }),
 );
 
-// 2. CORS
+// CORS configuration for the frontend origin
 app.use(
   cors({
     origin: process.env.FRONTEND_URL || "http://localhost:5173",
@@ -26,11 +27,14 @@ app.use(
   }),
 );
 
-// 3. Body parsers - IMPORTANT: These must come BEFORE routes
+// Stripe webhook must receive the raw body, so it is registered
+// before the JSON body parser
+app.use("/api/payment/webhook", express.raw({ type: "application/json" }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 4. Rate limiting
+// Rate limiting for the public API
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -38,42 +42,43 @@ const limiter = rateLimit({
 });
 app.use("/api/", limiter);
 
-// 5. Routes
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/quiz", quizRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/careers", careerRoutes);
 
-// 6. Health check
+// Root route, so visiting the server URL directly doesn't 404
+app.get("/", (req, res) => {
+  res.json({
+    status: "OK",
+    message: "NeuroCareers API. See /api/health for status.",
+  });
+});
+
+// Health check
 app.get("/api/health", (req, res) => {
   res.json({ status: "OK", message: "Server is running" });
 });
 
-// 7. Error handling middleware - MUST be last
+// Centralized error handler
 app.use((err, req, res, next) => {
   console.error("Error:", err.stack);
   res.status(500).json({
     success: false,
-    message: "Something went wrong!",
+    message: "Something went wrong",
     error: process.env.NODE_ENV === "development" ? err.message : undefined,
   });
 });
 
-// ✅ FIXED: MongoDB connection for Mongoose 7+
-// Remove the deprecated options
 mongoose
   .connect(process.env.MONGODB_URI)
-  .then(() => console.log("✅ MongoDB connected successfully"))
+  .then(() => console.log("MongoDB connected successfully"))
   .catch((err) => {
-    console.error("❌ MongoDB connection error:", err);
-    // Don't crash the server, just log the error
-    console.log("⚠️ Make sure MongoDB is installed and running");
-    console.log(
-      "💡 To install MongoDB: https://docs.mongodb.com/manual/installation/",
-    );
+    console.error("MongoDB connection error:", err);
   });
 
-// Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });

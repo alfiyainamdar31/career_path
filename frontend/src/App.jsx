@@ -8,37 +8,41 @@ import {
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import TwoFactorSetup from "./pages/TwoFactorSetup.jsx";
-import TwoFactorVerify from "./pages/TwoFactorVerify.jsx";
-import Quiz from "./pages/Quiz.jsx";
+import Quiz from "./pages/Quiz";
 import Results from "./pages/Results";
 import Dashboard from "./pages/Dashboard";
-import PaymentSuccess from "./pages/PaymentSuccess.jsx";
+import Careers from "./pages/Careers";
+import CareerDetail from "./pages/CareerDetail";
+import PaymentSuccess from "./pages/PaymentSuccess";
 import PrivateRoute from "./components/PrivateRoute";
 
 function App() {
   return (
     <Router>
       <AuthProvider>
-        <div className="min-h-screen" style={{ background: "var(--bg-page)" }}>
+        <div
+          className="min-h-screen"
+          style={{
+            background: "var(--bg-page)",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
           <Navbar />
-          <main className="container mx-auto px-4 py-8 max-w-7xl">
+          <main
+            className="container mx-auto px-4 py-8 max-w-7xl"
+            style={{ flex: 1, width: "100%" }}
+          >
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-              <Route path="/2fa/verify" element={<TwoFactorVerify />} />
-              <Route
-                path="/2fa/setup"
-                element={
-                  <PrivateRoute>
-                    <TwoFactorSetup />
-                  </PrivateRoute>
-                }
-              />
+              <Route path="/careers" element={<Careers />} />
+              <Route path="/careers/:id" element={<CareerDetail />} />
               <Route
                 path="/quiz"
                 element={
@@ -74,6 +78,7 @@ function App() {
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </main>
+          <Footer />
           <Toaster
             position="top-right"
             toastOptions={{

@@ -16,6 +16,30 @@ const resourceSchema = new mongoose.Schema({
   },
 });
 
+// A single step in the academic/career roadmap for a profession
+const roadmapStepSchema = new mongoose.Schema({
+  stage: {
+    type: String,
+    required: true, // e.g. "After 10th", "After 12th", "Undergraduate", "Postgraduate / Specialization"
+  },
+  title: {
+    type: String,
+    required: true, // e.g. "Choose Science stream with PCM"
+  },
+  description: {
+    type: String,
+    required: true,
+  },
+  subjects: {
+    type: [String],
+    default: [],
+  },
+  exams: {
+    type: [String],
+    default: [],
+  },
+});
+
 const careerSchema = new mongoose.Schema(
   {
     title: {
@@ -23,10 +47,16 @@ const careerSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    shortDescription: {
+      type: String,
+      required: true,
+    },
     description: {
       type: String,
       required: true,
     },
+
+    // Used for brain-quiz based matching
     brainType: {
       type: [String],
       enum: [
@@ -44,6 +74,32 @@ const careerSchema = new mongoose.Schema(
       min: 0,
       max: 100,
     },
+
+    // High level category for browsing/filtering
+    category: {
+      type: String,
+      enum: [
+        "Technology",
+        "Healthcare",
+        "Business & Finance",
+        "Design & Creative",
+        "Science & Research",
+        "Law & Public Service",
+        "Education",
+        "Media & Communication",
+        "Engineering",
+        "Arts & Humanities",
+      ],
+      required: true,
+    },
+
+    // Which 10th/12th streams lead naturally into this career
+    relevantStreams: {
+      type: [String],
+      enum: ["SCIENCE", "COMMERCE", "ARTS", "ANY"],
+      default: ["ANY"],
+    },
+
     requiredSkills: [
       {
         type: String,
@@ -58,10 +114,27 @@ const careerSchema = new mongoose.Schema(
       type: String,
       default: "Not specified",
     },
+    futureScope: {
+      type: String,
+      default: "",
+    },
+
+    // Step-by-step roadmap from school to profession
+    roadmap: {
+      type: [roadmapStepSchema],
+      default: [],
+    },
+
+    // Entrance/competitive exams relevant to this career overall
+    keyExams: {
+      type: [String],
+      default: [],
+    },
+
     resources: [resourceSchema],
     icon: {
       type: String,
-      default: "💼",
+      default: "briefcase",
     },
     color: {
       type: String,
@@ -77,5 +150,12 @@ const careerSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
+
+// Text index to support the career explorer search bar
+careerSchema.index({
+  title: "text",
+  description: "text",
+  requiredSkills: "text",
+});
 
 module.exports = mongoose.model("Career", careerSchema);

@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { Loader2 } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 import BrainMeter from "../components/BrainMeter";
 
 const Quiz = () => {
@@ -12,6 +14,7 @@ const Quiz = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,7 +23,8 @@ const Quiz = () => {
 
   const fetchQuestions = async () => {
     try {
-      const res = await axios.get("/quiz/questions");
+      const params = user?.academicLevel ? { level: user.academicLevel } : {};
+      const res = await axios.get("/quiz/questions", { params });
       setQuestions(res.data.questions);
       setAnswers(new Array(res.data.questions.length).fill(null));
       setLoading(false);
@@ -53,7 +57,7 @@ const Quiz = () => {
     try {
       const res = await axios.post("/quiz/submit", { answers });
       if (res.data.success) {
-        toast.success("Analysis complete! 🧠");
+        toast.success("Analysis complete");
         navigate("/results");
       }
     } catch (error) {
@@ -81,6 +85,24 @@ const Quiz = () => {
     );
   }
 
+  if (questions.length === 0) {
+    return (
+      <div
+        className="glass"
+        style={{
+          padding: "3rem",
+          textAlign: "center",
+          maxWidth: "500px",
+          margin: "2rem auto",
+        }}
+      >
+        <p style={{ color: "var(--text-muted)" }}>
+          No questions are available right now. Please try again later.
+        </p>
+      </div>
+    );
+  }
+
   const currentQ = questions[currentIndex];
   const progress = ((currentIndex + 1) / questions.length) * 100;
   const answeredCount = answers.filter((a) => a !== null).length;
@@ -91,6 +113,8 @@ const Quiz = () => {
     communication: "Communication",
     work_style: "Work Style",
     personal: "Personal Insight",
+    interest: "Interest",
+    aptitude: "Aptitude",
   };
 
   const optionColors = [
@@ -152,7 +176,6 @@ const Quiz = () => {
           </div>
         </div>
 
-        {/* Progress */}
         <div className="progress-track">
           <div className="progress-fill" style={{ width: `${progress}%` }} />
         </div>
@@ -172,10 +195,8 @@ const Quiz = () => {
         </div>
       </div>
 
-      {/* Brain Meter */}
       <BrainMeter answers={answers} currentIndex={currentIndex} />
 
-      {/* Question */}
       <AnimatePresence mode="wait">
         <motion.div
           key={currentIndex}
@@ -301,7 +322,6 @@ const Quiz = () => {
         </motion.div>
       </AnimatePresence>
 
-      {/* Navigation */}
       <div
         style={{
           display: "flex",
@@ -329,7 +349,7 @@ const Quiz = () => {
             opacity: currentIndex === 0 ? 0.4 : 1,
           }}
         >
-          ← Previous
+          Previous
         </button>
 
         {isLast ? (
@@ -352,14 +372,11 @@ const Quiz = () => {
                   gap: "0.5rem",
                 }}
               >
-                <span
-                  className="spinner"
-                  style={{ width: "18px", height: "18px", borderWidth: "2px" }}
-                />
-                Analyzing your brain...
+                <Loader2 size={18} className="spin-icon" />
+                Analyzing your responses...
               </span>
             ) : (
-              "Submit & See My Career Path →"
+              "Submit & See My Career Path"
             )}
           </button>
         ) : (
@@ -369,7 +386,6 @@ const Quiz = () => {
         )}
       </div>
 
-      {/* Dot navigation */}
       <div
         style={{
           display: "flex",

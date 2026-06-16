@@ -1,306 +1,82 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
-import { loadStripe } from "@stripe/stripe-js";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  Share2,
+  RotateCcw,
+  Trophy,
+  Sparkles,
+  Banknote,
+  LineChart,
+  GraduationCap,
+  Map,
+  BookMarked,
+  Code,
+  ScatterChart,
+  Settings,
+  ShieldCheck,
+  Stethoscope,
+  Microscope,
+  Pill,
+  Calculator,
+  TrendingUp,
+  Scale,
+  Landmark,
+  Palette,
+  Brush,
+  Mic,
+  BookOpen,
+  Brain,
+  Rocket,
+  Briefcase,
+  Compass,
+  BarChart3,
+} from "lucide-react";
 
-// Subject recommendations by brain type
-const SUBJECT_RECOMMENDATIONS = {
-  STRONG_LEFT: {
-    label: "Left Brain Dominant",
-    subjects: [
-      {
-        name: "Mathematics",
-        reason: "Algebra, Calculus, Statistics",
-        icon: "📐",
-        priority: "Essential",
-      },
-      {
-        name: "Physics",
-        reason: "Mechanics, Thermodynamics, Optics",
-        icon: "⚛️",
-        priority: "Essential",
-      },
-      {
-        name: "Computer Science",
-        reason: "Algorithms, Data Structures",
-        icon: "💻",
-        priority: "Essential",
-      },
-      {
-        name: "Chemistry",
-        reason: "Analytical and Physical Chemistry",
-        icon: "🧪",
-        priority: "Recommended",
-      },
-      {
-        name: "Economics",
-        reason: "Micro & Macroeconomics, Econometrics",
-        icon: "📊",
-        priority: "Recommended",
-      },
-      {
-        name: "Logic & Philosophy",
-        reason: "Formal Logic, Critical Thinking",
-        icon: "🔍",
-        priority: "Optional",
-      },
-    ],
-    streams: ["Science (PCM)", "Engineering", "Commerce with Maths"],
-    certifications: [
-      "AWS Certified Solutions Architect",
-      "Google Data Analytics Certificate",
-      "CFA Level 1",
-    ],
-  },
-  MODERATE_LEFT: {
-    label: "Moderate Left Brain",
-    subjects: [
-      {
-        name: "Mathematics",
-        reason: "Statistics, Applied Math",
-        icon: "📐",
-        priority: "Essential",
-      },
-      {
-        name: "Computer Science",
-        reason: "Programming, Web Development",
-        icon: "💻",
-        priority: "Essential",
-      },
-      {
-        name: "Business Studies",
-        reason: "Management, Finance",
-        icon: "💼",
-        priority: "Recommended",
-      },
-      {
-        name: "Physics",
-        reason: "Applied Physics",
-        icon: "⚛️",
-        priority: "Recommended",
-      },
-      {
-        name: "Psychology",
-        reason: "Cognitive Psychology, Research Methods",
-        icon: "🧠",
-        priority: "Optional",
-      },
-      {
-        name: "English",
-        reason: "Technical Writing, Communication",
-        icon: "📝",
-        priority: "Recommended",
-      },
-    ],
-    streams: ["Science (PCM)", "Commerce with Maths", "BBA/BCA"],
-    certifications: [
-      "Google Project Management Certificate",
-      "Scrum Master (PSM I)",
-      "Python for Everybody",
-    ],
-  },
-  BALANCED: {
-    label: "Balanced Brain",
-    subjects: [
-      {
-        name: "Business Studies",
-        reason: "Strategy, Operations, Marketing",
-        icon: "💼",
-        priority: "Essential",
-      },
-      {
-        name: "Psychology",
-        reason: "Behavioral Science, UX Research",
-        icon: "🧠",
-        priority: "Essential",
-      },
-      {
-        name: "Design",
-        reason: "Visual Communication, UX/UI",
-        icon: "🎨",
-        priority: "Recommended",
-      },
-      {
-        name: "Computer Science",
-        reason: "Programming basics, Digital Tools",
-        icon: "💻",
-        priority: "Recommended",
-      },
-      {
-        name: "Economics",
-        reason: "Business Economics",
-        icon: "📊",
-        priority: "Recommended",
-      },
-      {
-        name: "Communication",
-        reason: "Public Speaking, Writing",
-        icon: "💬",
-        priority: "Optional",
-      },
-    ],
-    streams: [
-      "Commerce (with/without Maths)",
-      "Humanities",
-      "BBA",
-      "Mass Communication",
-    ],
-    certifications: [
-      "Google UX Design Certificate",
-      "Product Management (Product School)",
-      "HubSpot Marketing",
-    ],
-  },
-  MODERATE_RIGHT: {
-    label: "Moderate Right Brain",
-    subjects: [
-      {
-        name: "Design & Visual Arts",
-        reason: "Graphic Design, Typography",
-        icon: "🎨",
-        priority: "Essential",
-      },
-      {
-        name: "Psychology",
-        reason: "Consumer Behavior, Social Psychology",
-        icon: "🧠",
-        priority: "Essential",
-      },
-      {
-        name: "English Literature",
-        reason: "Creative Writing, Storytelling",
-        icon: "📚",
-        priority: "Essential",
-      },
-      {
-        name: "Marketing",
-        reason: "Brand Strategy, Digital Marketing",
-        icon: "📣",
-        priority: "Recommended",
-      },
-      {
-        name: "Media Studies",
-        reason: "Film, Journalism, Content Creation",
-        icon: "🎬",
-        priority: "Recommended",
-      },
-      {
-        name: "Sociology",
-        reason: "Social trends, Cultural Analysis",
-        icon: "🌐",
-        priority: "Optional",
-      },
-    ],
-    streams: [
-      "Humanities/Arts",
-      "Mass Communication",
-      "Fine Arts",
-      "BA Psychology",
-    ],
-    certifications: [
-      "Adobe Certified Professional",
-      "Google Digital Marketing Certificate",
-      "Coursera UX Design",
-    ],
-  },
-  STRONG_RIGHT: {
-    label: "Strong Right Brain",
-    subjects: [
-      {
-        name: "Fine Arts & Design",
-        reason: "Illustration, Concept Art, Branding",
-        icon: "🎨",
-        priority: "Essential",
-      },
-      {
-        name: "English Literature",
-        reason: "Narrative, Creative Writing",
-        icon: "📚",
-        priority: "Essential",
-      },
-      {
-        name: "Media & Film Studies",
-        reason: "Cinematography, Storytelling",
-        icon: "🎬",
-        priority: "Essential",
-      },
-      {
-        name: "Music",
-        reason: "Theory, Composition, Production",
-        icon: "🎵",
-        priority: "Recommended",
-      },
-      {
-        name: "Architecture",
-        reason: "Spatial Design, Aesthetics",
-        icon: "🏛️",
-        priority: "Recommended",
-      },
-      {
-        name: "Philosophy",
-        reason: "Ethics, Aesthetics, Critical Thought",
-        icon: "💭",
-        priority: "Optional",
-      },
-    ],
-    streams: [
-      "Fine Arts",
-      "Architecture",
-      "Mass Communication",
-      "Humanities/Liberal Arts",
-    ],
-    certifications: [
-      "Adobe Creative Suite Certification",
-      "Motion Design (School of Motion)",
-      "Film Direction Diploma",
-    ],
-  },
-};
-
-const priorityColors = {
-  Essential: { bg: "#ecfdf5", text: "#065f46", border: "#6ee7b7" },
-  Recommended: { bg: "#eff6ff", text: "#1e40af", border: "#93c5fd" },
-  Optional: { bg: "#f5f3ff", text: "#4c1d95", border: "#c4b5fd" },
+const ICON_MAP = {
+  code: Code,
+  "chart-dots": ScatterChart,
+  settings: Settings,
+  "shield-lock": ShieldCheck,
+  stethoscope: Stethoscope,
+  microscope: Microscope,
+  pill: Pill,
+  calculator: Calculator,
+  "trending-up": TrendingUp,
+  scale: Scale,
+  landmark: Landmark,
+  palette: Palette,
+  brush: Brush,
+  microphone: Mic,
+  "book-open": BookOpen,
+  brain: Brain,
+  rocket: Rocket,
 };
 
 const dominanceConfig = {
-  STRONG_LEFT: {
-    label: "Strong Left Brain",
-    color: "var(--left-brain)",
-    emoji: "🔬",
-  },
-  MODERATE_LEFT: {
-    label: "Moderate Left Brain",
-    color: "#818cf8",
-    emoji: "🧮",
-  },
-  BALANCED: { label: "Balanced Brain", color: "var(--balanced)", emoji: "⚖️" },
-  MODERATE_RIGHT: {
-    label: "Moderate Right Brain",
-    color: "#fb923c",
-    emoji: "🎭",
-  },
-  STRONG_RIGHT: {
-    label: "Strong Right Brain",
-    color: "var(--right-brain)",
-    emoji: "🎨",
-  },
+  STRONG_LEFT: { label: "Strong Left Brain", color: "var(--left-brain)" },
+  MODERATE_LEFT: { label: "Moderate Left Brain", color: "#818cf8" },
+  BALANCED: { label: "Balanced Brain", color: "var(--balanced)" },
+  MODERATE_RIGHT: { label: "Moderate Right Brain", color: "#fb923c" },
+  STRONG_RIGHT: { label: "Strong Right Brain", color: "var(--right-brain)" },
 };
 
 const dominanceMessages = {
   STRONG_LEFT:
-    "You're a logical powerhouse. You thrive on structure, data, and systematic problem-solving. Engineering, finance, and data science are your natural habitats.",
+    "You're a logical powerhouse. You thrive on structure, data, and systematic problem-solving. Engineering, finance, and data science are natural fits.",
   MODERATE_LEFT:
-    "You lean analytical but retain creative flexibility. You're built for roles that blend logic with communication — product management, development, and consulting.",
+    "You lean analytical but retain creative flexibility. You're built for roles that blend logic with communication, such as product development or analysis.",
   BALANCED:
-    "You're a rare hybrid thinker who can move between analytical and creative modes. Product management, UX design, and consulting are natural fits.",
+    "You're a hybrid thinker who can move between analytical and creative modes. Management, design, and consulting roles suit you well.",
   MODERATE_RIGHT:
     "You think creatively but appreciate structure. Marketing, content strategy, and people-centric roles let you use your natural strengths.",
   STRONG_RIGHT:
-    "You're a creative visionary. Your brain excels at big-picture thinking, aesthetics, and innovation. Design, art direction, and media are your calling.",
+    "You're a creative visionary. Your brain excels at big-picture thinking, aesthetics, and innovation. Design, art direction, and media suit you well.",
 };
+
+const tierClass = { S: "tier-s", A: "tier-a", B: "tier-b", C: "tier-c" };
 
 const Results = () => {
   const [results, setResults] = useState(null);
@@ -318,23 +94,20 @@ const Results = () => {
       const res = await axios.get("/quiz/results");
       setResults(res.data.results);
     } catch (error) {
-      toast.error("Failed to load results. Please take the quiz first.");
+      toast.error("Please take the quiz first");
       navigate("/quiz");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleUpgrade = async () => {
+  const handleUpgrade = async (plan) => {
     setProcessingPayment(true);
     try {
-      const res = await axios.post("/payment/create-checkout-session");
-      if (res.data.url) {
-        window.location.href = res.data.url;
-      } else {
-        const stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
-        await stripe.redirectToCheckout({ sessionId: res.data.sessionId });
-      }
+      const res = await axios.post("/payment/create-checkout-session", {
+        plan,
+      });
+      if (res.data.url) window.location.href = res.data.url;
     } catch (error) {
       toast.error("Payment setup failed. Please try again.");
     } finally {
@@ -343,10 +116,10 @@ const Results = () => {
   };
 
   const handleShare = () => {
-    const text = `My brain is ${results?.dominance?.replace(
+    const text = `My brain profile is ${results?.dominance?.replace(
       /_/g,
       " ",
-    )}! I used NeuroCareers to discover my ideal career path. 🧠`;
+    )}. I used NeuroCareers to discover my ideal career path.`;
     if (navigator.share) {
       navigator.share({
         title: "My Brain Career Results",
@@ -355,7 +128,7 @@ const Results = () => {
       });
     } else {
       navigator.clipboard.writeText(text);
-      toast.success("Copied to clipboard!");
+      toast.success("Copied to clipboard");
     }
   };
 
@@ -378,13 +151,9 @@ const Results = () => {
   }
 
   const config = dominanceConfig[results.dominance] || dominanceConfig.BALANCED;
-  const subjectData =
-    SUBJECT_RECOMMENDATIONS[results.dominance] ||
-    SUBJECT_RECOMMENDATIONS.BALANCED;
 
   const tabs = [
     { id: "careers", label: "Career Matches" },
-    { id: "subjects", label: "Subject Roadmap" },
     { id: "analysis", label: "Brain Analysis" },
   ];
 
@@ -396,8 +165,19 @@ const Results = () => {
         animate={{ opacity: 1, y: 0 }}
         style={{ textAlign: "center", padding: "2.5rem 0 2rem" }}
       >
-        <div style={{ fontSize: "4rem", marginBottom: "1rem" }}>
-          {config.emoji}
+        <div
+          style={{
+            width: "64px",
+            height: "64px",
+            background: `${config.color}15`,
+            borderRadius: "16px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            margin: "0 auto 1rem",
+          }}
+        >
+          <Brain size={32} color={config.color} />
         </div>
         <div
           className="section-tag"
@@ -428,7 +208,6 @@ const Results = () => {
           {dominanceMessages[results.dominance]}
         </p>
 
-        {/* Score pills */}
         <div
           style={{
             display: "flex",
@@ -496,16 +275,28 @@ const Results = () => {
           <button
             onClick={handleShare}
             className="btn-secondary"
-            style={{ padding: "0.5rem 1.25rem", fontSize: "0.85rem" }}
+            style={{
+              padding: "0.5rem 1.25rem",
+              fontSize: "0.85rem",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.4rem",
+            }}
           >
-            📤 Share Results
+            <Share2 size={15} /> Share Results
           </button>
           <button
             onClick={() => navigate("/quiz")}
             className="btn-secondary"
-            style={{ padding: "0.5rem 1.25rem", fontSize: "0.85rem" }}
+            style={{
+              padding: "0.5rem 1.25rem",
+              fontSize: "0.85rem",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.4rem",
+            }}
           >
-            🔄 Retake Quiz
+            <RotateCcw size={15} /> Retake Quiz
           </button>
         </div>
       </motion.div>
@@ -572,8 +363,8 @@ const Results = () => {
             color: "var(--text-muted)",
           }}
         >
-          <span>🧠 Left: Logical · Analytical · Structured</span>
-          <span>Creative · Intuitive · Visual: Right 🎨</span>
+          <span>Left: Logical · Analytical · Structured</span>
+          <span>Creative · Intuitive · Visual: Right</span>
         </div>
       </motion.div>
 
@@ -616,7 +407,6 @@ const Results = () => {
         ))}
       </div>
 
-      {/* Tab content */}
       <AnimatePresence mode="wait">
         {activeTab === "careers" && (
           <motion.div
@@ -631,6 +421,8 @@ const Results = () => {
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
+                flexWrap: "wrap",
+                gap: "0.5rem",
               }}
             >
               <h2
@@ -639,15 +431,20 @@ const Results = () => {
                   fontSize: "1.4rem",
                   fontWeight: 700,
                   color: "var(--text-primary)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
                 }}
               >
-                🎯 Your Career Priority List
+                <Compass size={20} color="var(--accent-primary)" /> Your Career
+                Priority List
               </h2>
               {!results.isPremium && (
                 <span
                   style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}
                 >
-                  Showing {results.careers?.length || 0} of 10+ matches
+                  Showing {results.careers?.length || 0} of{" "}
+                  {results.totalMatches || results.careers?.length} matches
                 </span>
               )}
             </div>
@@ -662,37 +459,19 @@ const Results = () => {
             >
               {(results.careers || []).map((career, i) => (
                 <CareerCard
-                  key={career.careerId?._id || i}
+                  key={career.careerId}
                   career={career}
                   rank={i + 1}
-                  isPremium={results.isPremium}
                 />
               ))}
             </div>
 
-            {/* Premium Unlock */}
             {!results.isPremium && (
               <PremiumUpgrade
                 onUpgrade={handleUpgrade}
                 processing={processingPayment}
               />
             )}
-          </motion.div>
-        )}
-
-        {activeTab === "subjects" && (
-          <motion.div
-            key="subjects"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-          >
-            <SubjectRoadmap
-              data={subjectData}
-              isPremium={results.isPremium}
-              onUpgrade={handleUpgrade}
-              processing={processingPayment}
-            />
           </motion.div>
         )}
 
@@ -711,11 +490,9 @@ const Results = () => {
   );
 };
 
-const CareerCard = ({ career, rank, isPremium }) => {
+const CareerCard = ({ career, rank }) => {
   const [expanded, setExpanded] = useState(rank <= 2);
-  const tierClass =
-    { S: "tier-s", A: "tier-a", B: "tier-b", C: "tier-c" }[career.tier] ||
-    "tier-b";
+  const Icon = ICON_MAP[career.icon] || Briefcase;
 
   return (
     <motion.div
@@ -753,11 +530,10 @@ const CareerCard = ({ career, rank, isPremium }) => {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: "1.5rem",
               flexShrink: 0,
             }}
           >
-            {career.icon || "💼"}
+            <Icon size={22} color={career.color || "var(--accent-primary)"} />
           </div>
           <div style={{ flex: 1 }}>
             <div
@@ -799,12 +575,17 @@ const CareerCard = ({ career, rank, isPremium }) => {
                     padding: "0.15rem 0.55rem",
                     borderRadius: "999px",
                     border: "1px solid #fcd34d",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.25rem",
                   }}
                 >
-                  🏆 Best Match
+                  <Trophy size={11} /> Best Match
                 </span>
               )}
-              <span className={`tier-badge ${tierClass}`}>
+              <span
+                className={`tier-badge ${tierClass[career.tier] || "tier-b"}`}
+              >
                 {career.tier || "B"}-Tier
               </span>
             </div>
@@ -816,7 +597,7 @@ const CareerCard = ({ career, rank, isPremium }) => {
                 margin: 0,
               }}
             >
-              {career.description}
+              {career.shortDescription || career.description}
             </p>
           </div>
         </div>
@@ -879,6 +660,9 @@ const CareerCard = ({ career, rank, isPremium }) => {
                 {career.averageSalary && (
                   <span
                     style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.3rem",
                       background: "#ecfdf5",
                       color: "#065f46",
                       border: "1px solid #6ee7b7",
@@ -888,12 +672,15 @@ const CareerCard = ({ career, rank, isPremium }) => {
                       fontWeight: 600,
                     }}
                   >
-                    💰 {career.averageSalary}
+                    <Banknote size={13} /> {career.averageSalary}
                   </span>
                 )}
                 {career.growthRate && (
                   <span
                     style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.3rem",
                       background: "#eff6ff",
                       color: "#1e40af",
                       border: "1px solid #93c5fd",
@@ -903,7 +690,7 @@ const CareerCard = ({ career, rank, isPremium }) => {
                       fontWeight: 600,
                     }}
                   >
-                    📈 {career.growthRate}
+                    <LineChart size={13} /> {career.growthRate}
                   </span>
                 )}
               </div>
@@ -920,7 +707,7 @@ const CareerCard = ({ career, rank, isPremium }) => {
                       letterSpacing: "0.06em",
                     }}
                   >
-                    Skills to develop
+                    Core skills
                   </div>
                   <div
                     style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}
@@ -934,43 +721,18 @@ const CareerCard = ({ career, rank, isPremium }) => {
                 </div>
               )}
 
-              {career.resources?.length > 0 && isPremium && (
-                <div>
-                  <div
-                    style={{
-                      fontSize: "0.75rem",
-                      fontWeight: 700,
-                      color: "var(--text-muted)",
-                      marginBottom: "0.5rem",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.06em",
-                    }}
-                  >
-                    Learning resources
-                  </div>
-                  <div
-                    style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}
-                  >
-                    {career.resources.map((r, i) => (
-                      <a
-                        key={i}
-                        href={r.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="resource-link"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {r.type === "course"
-                          ? "📖"
-                          : r.type === "book"
-                          ? "📚"
-                          : "🎥"}{" "}
-                        {r.name}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <Link
+                to={`/careers/${career.careerId}`}
+                onClick={(e) => e.stopPropagation()}
+                className="resource-link"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.4rem",
+                }}
+              >
+                <Map size={13} /> View Full Roadmap
+              </Link>
             </div>
           </motion.div>
         )}
@@ -978,216 +740,6 @@ const CareerCard = ({ career, rank, isPremium }) => {
     </motion.div>
   );
 };
-
-const SubjectRoadmap = ({ data, isPremium, onUpgrade, processing }) => (
-  <div>
-    <div style={{ marginBottom: "1.5rem" }}>
-      <h2
-        style={{
-          fontFamily: "var(--font-display)",
-          fontSize: "1.4rem",
-          fontWeight: 700,
-          color: "var(--text-primary)",
-          marginBottom: "0.5rem",
-        }}
-      >
-        🎓 Recommended Subject Roadmap
-      </h2>
-      <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>
-        Based on your <strong>{data.label}</strong> profile, here's what to
-        study:
-      </p>
-    </div>
-
-    {/* Recommended streams */}
-    <div
-      className="glass"
-      style={{ padding: "1.25rem 1.5rem", marginBottom: "1.5rem" }}
-    >
-      <div
-        style={{
-          fontSize: "0.75rem",
-          fontWeight: 700,
-          color: "var(--text-muted)",
-          textTransform: "uppercase",
-          letterSpacing: "0.06em",
-          marginBottom: "0.75rem",
-        }}
-      >
-        Recommended Academic Streams
-      </div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-        {data.streams.map((s, i) => (
-          <span
-            key={i}
-            style={{
-              padding: "0.5rem 1rem",
-              borderRadius: "999px",
-              border: "1.5px solid var(--accent-primary)",
-              color: "var(--accent-primary)",
-              fontSize: "0.85rem",
-              fontWeight: 600,
-              background: "var(--bg-surface-2)",
-            }}
-          >
-            {s}
-          </span>
-        ))}
-      </div>
-    </div>
-
-    {/* Subject list */}
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "0.75rem",
-        marginBottom: "1.5rem",
-      }}
-    >
-      {data.subjects.map((subj, i) => {
-        const pc = priorityColors[subj.priority];
-        return (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, x: -16 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: i * 0.07 }}
-            className="glass"
-            style={{
-              padding: "1.1rem 1.25rem",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: "1rem",
-            }}
-          >
-            <div
-              style={{ display: "flex", alignItems: "center", gap: "0.85rem" }}
-            >
-              <span style={{ fontSize: "1.4rem" }}>{subj.icon}</span>
-              <div>
-                <div
-                  style={{
-                    fontWeight: 600,
-                    color: "var(--text-primary)",
-                    fontSize: "0.95rem",
-                  }}
-                >
-                  {subj.name}
-                </div>
-                <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
-                  {subj.reason}
-                </div>
-              </div>
-            </div>
-            <span
-              style={{
-                padding: "0.25rem 0.75rem",
-                borderRadius: "999px",
-                fontSize: "0.75rem",
-                fontWeight: 700,
-                background: pc.bg,
-                color: pc.text,
-                border: `1px solid ${pc.border}`,
-                whiteSpace: "nowrap",
-                flexShrink: 0,
-              }}
-            >
-              {subj.priority}
-            </span>
-          </motion.div>
-        );
-      })}
-    </div>
-
-    {/* Certifications */}
-    <div
-      className="glass"
-      style={{ padding: "1.25rem 1.5rem", marginBottom: "1.5rem" }}
-    >
-      <div
-        style={{
-          fontSize: "0.75rem",
-          fontWeight: 700,
-          color: "var(--text-muted)",
-          textTransform: "uppercase",
-          letterSpacing: "0.06em",
-          marginBottom: "0.85rem",
-        }}
-      >
-        🏅 Industry Certifications to Target
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-        {data.certifications.map((cert, i) => (
-          <div
-            key={i}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "0.6rem",
-              fontSize: "0.88rem",
-              color: "var(--text-secondary)",
-            }}
-          >
-            <div
-              style={{
-                width: "6px",
-                height: "6px",
-                borderRadius: "50%",
-                background: "var(--accent-primary)",
-                flexShrink: 0,
-              }}
-            />
-            {cert}
-          </div>
-        ))}
-      </div>
-    </div>
-
-    {!isPremium && (
-      <div
-        style={{
-          background:
-            "linear-gradient(135deg, rgba(99,102,241,0.06), rgba(139,92,246,0.06))",
-          border: "1px solid var(--border-default)",
-          borderRadius: "var(--radius-lg)",
-          padding: "1.5rem",
-          textAlign: "center",
-        }}
-      >
-        <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>🔓</div>
-        <div
-          style={{
-            fontWeight: 700,
-            color: "var(--text-primary)",
-            marginBottom: "0.5rem",
-          }}
-        >
-          Unlock Full Subject Roadmap
-        </div>
-        <div
-          style={{
-            color: "var(--text-muted)",
-            fontSize: "0.88rem",
-            marginBottom: "1.25rem",
-          }}
-        >
-          Get a detailed week-by-week study plan, textbook recommendations, and
-          a personalized learning timeline with Premium.
-        </div>
-        <button
-          onClick={onUpgrade}
-          disabled={processing}
-          className="btn-premium"
-          style={{ borderRadius: "var(--radius-md)" }}
-        >
-          {processing ? "Processing..." : "Upgrade to Premium — $9.99 once"}
-        </button>
-      </div>
-    )}
-  </div>
-);
 
 const BrainAnalysis = ({ results, config }) => {
   const traits = {
@@ -1244,9 +796,13 @@ const BrainAnalysis = ({ results, config }) => {
           fontWeight: 700,
           color: "var(--text-primary)",
           marginBottom: "1.5rem",
+          display: "flex",
+          alignItems: "center",
+          gap: "0.5rem",
         }}
       >
-        🧠 Your Cognitive Profile
+        <BarChart3 size={20} color="var(--accent-primary)" /> Your Cognitive
+        Profile
       </h2>
 
       <div
@@ -1305,77 +861,9 @@ const BrainAnalysis = ({ results, config }) => {
                     borderRadius: "999px",
                     background:
                       trait.score >= 75 ? config.color : "var(--bg-surface-3)",
-                    backgroundImage:
-                      trait.score >= 75
-                        ? `linear-gradient(90deg, ${config.color}aa, ${config.color})`
-                        : "none",
                   }}
                 />
               </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Ideal work environment */}
-      <div className="glass" style={{ padding: "1.5rem" }}>
-        <div
-          style={{
-            fontSize: "0.75rem",
-            fontWeight: 700,
-            color: "var(--text-muted)",
-            textTransform: "uppercase",
-            letterSpacing: "0.06em",
-            marginBottom: "1rem",
-          }}
-        >
-          Your Ideal Work Environment
-        </div>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-            gap: "0.75rem",
-          }}
-        >
-          {[
-            results.dominance.includes("LEFT")
-              ? "Structured & Deadline-Driven"
-              : "Flexible & Open",
-            results.dominance === "BALANCED"
-              ? "Collaborative Teams"
-              : results.dominance.includes("LEFT")
-              ? "Independent Work"
-              : "Creative Studios",
-            results.dominance.includes("LEFT")
-              ? "Data-Rich Environments"
-              : "Visually Inspiring Spaces",
-            "Growth-Oriented Culture",
-          ].map((env, i) => (
-            <div
-              key={i}
-              style={{
-                background: "var(--bg-surface-2)",
-                borderRadius: "var(--radius-sm)",
-                padding: "0.65rem 0.85rem",
-                fontSize: "0.82rem",
-                color: "var(--text-secondary)",
-                fontWeight: 500,
-                display: "flex",
-                alignItems: "center",
-                gap: "0.4rem",
-              }}
-            >
-              <div
-                style={{
-                  width: "6px",
-                  height: "6px",
-                  borderRadius: "50%",
-                  background: config.color,
-                  flexShrink: 0,
-                }}
-              />
-              {env}
             </div>
           ))}
         </div>
@@ -1396,7 +884,20 @@ const PremiumUpgrade = ({ onUpgrade, processing }) => (
       textAlign: "center",
     }}
   >
-    <div style={{ fontSize: "3rem", marginBottom: "0.75rem" }}>💎</div>
+    <div
+      style={{
+        width: "56px",
+        height: "56px",
+        background: "linear-gradient(135deg,#f59e0b,#ef4444)",
+        borderRadius: "14px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        margin: "0 auto 1rem",
+      }}
+    >
+      <Sparkles size={28} color="white" />
+    </div>
     <h3
       style={{
         fontFamily: "var(--font-display)",
@@ -1417,8 +918,7 @@ const PremiumUpgrade = ({ onUpgrade, processing }) => (
         lineHeight: 1.7,
       }}
     >
-      You're seeing 3 of 10+ career matches. Upgrade once for lifetime access to
-      everything.
+      Upgrade to see every career match, full roadmaps, and curated resources.
     </p>
 
     <div
@@ -1432,14 +932,22 @@ const PremiumUpgrade = ({ onUpgrade, processing }) => (
       }}
     >
       {[
-        { icon: "🎯", title: "10+ Career Matches", desc: "Full ranked list" },
         {
-          icon: "📚",
+          icon: Compass,
+          title: "All Career Matches",
+          desc: "Full ranked list",
+        },
+        {
+          icon: BookMarked,
           title: "Learning Resources",
           desc: "Curated courses & books",
         },
-        { icon: "🗺️", title: "Study Roadmap", desc: "Week-by-week plan" },
-        { icon: "📊", title: "Skill Gap Analysis", desc: "Know what to learn" },
+        { icon: Map, title: "Full Roadmaps", desc: "Step-by-step plans" },
+        {
+          icon: GraduationCap,
+          title: "Exam Guidance",
+          desc: "Know what to prepare for",
+        },
       ].map((f, i) => (
         <div
           key={i}
@@ -1450,9 +958,11 @@ const PremiumUpgrade = ({ onUpgrade, processing }) => (
             border: "1px solid #fde68a",
           }}
         >
-          <div style={{ fontSize: "1.5rem", marginBottom: "0.4rem" }}>
-            {f.icon}
-          </div>
+          <f.icon
+            size={20}
+            color="#92400e"
+            style={{ marginBottom: "0.4rem" }}
+          />
           <div
             style={{
               fontWeight: 700,
@@ -1468,27 +978,33 @@ const PremiumUpgrade = ({ onUpgrade, processing }) => (
       ))}
     </div>
 
-    <button
-      onClick={onUpgrade}
-      disabled={processing}
-      className="btn-premium"
-      style={{ fontSize: "1rem", padding: "1rem 3rem" }}
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        gap: "0.85rem",
+        flexWrap: "wrap",
+      }}
     >
-      {processing ? (
-        <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          <span
-            className="spinner"
-            style={{ width: "18px", height: "18px", borderWidth: "2px" }}
-          />
-          Redirecting to payment...
-        </span>
-      ) : (
-        "Unlock Premium — $9.99 (One-time)"
-      )}
-    </button>
-    <p style={{ fontSize: "0.78rem", color: "#b45309", marginTop: "0.75rem" }}>
-      ✓ Secure payment via Stripe &nbsp;·&nbsp; ✓ Lifetime access &nbsp;·&nbsp;
-      ✓ 30-day money-back guarantee
+      <button
+        onClick={() => onUpgrade("PREMIUM_MONTHLY")}
+        disabled={processing}
+        className="btn-secondary"
+        style={{ fontSize: "0.9rem", padding: "0.85rem 1.75rem" }}
+      >
+        Monthly Plan
+      </button>
+      <button
+        onClick={() => onUpgrade("PREMIUM_LIFETIME")}
+        disabled={processing}
+        className="btn-premium"
+        style={{ fontSize: "1rem", padding: "1rem 2.5rem" }}
+      >
+        {processing ? "Redirecting..." : "Get Lifetime Access"}
+      </button>
+    </div>
+    <p style={{ fontSize: "0.78rem", color: "#b45309", marginTop: "1rem" }}>
+      Secure payment via Stripe · Cancel monthly plan anytime
     </p>
   </motion.div>
 );
