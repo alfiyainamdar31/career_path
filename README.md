@@ -62,3 +62,5 @@ npm run dev
 - Career Explorer with full text search and category, stream, and tier filters
 - Career detail pages with a step-by-step roadmap, subjects, exams and future scope
 - Stripe checkout for monthly and lifetime premium plans, with webhook-based activation
+
+**Update:** working on `\api\auth\register` path. please use provided credentials to login for now
