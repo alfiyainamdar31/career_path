@@ -27,10 +27,6 @@ app.use(
   }),
 );
 
-// Stripe webhook must receive the raw body, so it is registered
-// before the JSON body parser
-app.use("/api/payment/webhook", express.raw({ type: "application/json" }));
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
