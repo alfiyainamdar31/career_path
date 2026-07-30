@@ -77,8 +77,13 @@ router.post(
     let event;
 
     try {
-      // Use your Stripe webhook secret (get from Stripe dashboard)
       const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+      if (!webhookSecret) {
+        console.error("STRIPE_WEBHOOK_SECRET is not set");
+        return res.status(500).send("Webhook secret not configured");
+      }
+      
       event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
     } catch (err) {
       console.error("Webhook signature verification failed:", err.message);
@@ -86,25 +91,42 @@ router.post(
     }
 
     // Handle the event
-    switch (event.type) {
-      case "checkout.session.completed":
-        const session = event.data.object;
-        const userId = session.metadata.userId;
+    try {
+      switch (event.type) {
+        case "checkout.session.completed":
+          const session = event.data.object;
+          const userId = session.metadata.userId;
+          
+          if (!userId) {
+            console.error("No userId found in session metadata");
+            return res.status(400).send("Missing userId in metadata");
+          }
 
-        // Update user to premium
-        await User.findByIdAndUpdate(userId, {
-          isPremium: true,
-        });
+          // Update user to premium
+          const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { isPremium: true },
+            { new: true }
+          );
 
-        console.log(`User ${userId} upgraded to premium`);
-        break;
+          if (!updatedUser) {
+            console.error(`User ${userId} not found`);
+            return res.status(404).send("User not found");
+          }
 
-      default:
-        console.log(`Unhandled event type ${event.type}`);
+          console.log(`User ${userId} upgraded to premium successfully`);
+          break;
+
+        default:
+          console.log(`Unhandled event type ${event.type}`);
+      }
+
+      res.json({ received: true });
+    } catch (err) {
+      console.error("Error processing webhook event:", err);
+      res.status(500).send("Error processing webhook");
     }
-
-    res.json({ received: true });
-  },
+  }
 );
 
 module.exports = router;
